@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+{% block page_subtitle %}Manage who can access the admin panel{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('users.create') }}">{{ icon('plus') }} New user</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name or email…" class="input">
+    </div>
+
+    <select name="role" class="select" data-autosubmit style="width: auto; min-width: 140px;">
+      <option value="">All roles</option>
+      <option value="admin"   {{ 'selected' if role == 'admin' }}>Admin</option>
+      <option value="manager" {{ 'selected' if role == 'manager' }}>Manager</option>
+      <option value="staff"   {{ 'selected' if role == 'staff' }}>Staff</option>
+    </select>
+
+    <select name="status" class="select" data-autosubmit style="width: auto; min-width: 140px;">
+      <option value="">All statuses</option>
+      <option value="active"   {{ 'selected' if status == 'active' }}>Active</option>
+      <option value="inactive" {{ 'selected' if status == 'inactive' }}>Inactive</option>
+    </select>
+
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q or role or status %}
+      <a class="btn btn--ghost" href="{{ url_for('users.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if users %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Last login</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <div class="cell-user">
+              <div class="avatar">{{ u.initials }}</div>
+              <div>
+                <strong>{{ u.name }}{% if u.id == current_user.id %} <span class="text-muted" style="font-weight: 400;">(you)</span>{% endif %}</strong>
+                <span>{{ u.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted text-mono">{{ u.phone or '—' }}</td>
+          <td>
+            <span class="badge {{ 'badge--info' if u.role == 'admin' else ('badge--warning' if u.role == 'manager' else 'badge--neutral') }}">
+              {{ u.role_label }}
+            </span>
+          </td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge badge--success">Active</span>
+            {% else %}
+              <span class="badge badge--danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="text-muted text-mono">
+            {{ u.last_login_at.strftime('%d %b %Y, %H:%M') if u.last_login_at else 'Never' }}
+          </td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('users.edit', user_id=u.id) }}">{{ icon('edit') }} Edit</a>
+            {% if u.id != current_user.id %}
+              <form method="post" action="{{ url_for('users.toggle', user_id=u.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn--ghost btn--sm" type="submit" title="{{ 'Deactivate' if u.is_active else 'Activate' }}">
+                  {{ icon('power') }} {{ 'Disable' if u.is_active else 'Enable' }}
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('users.delete', user_id=u.id) }}"
+                    data-confirm="Delete “{{ u.name }}”? This cannot be undone.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card__foot">
+    <span class="text-muted">
+      Showing {{ users | length }} of {{ pagination.total }} user{{ '' if pagination.total == 1 else 's' }}
+    </span>
+    {% if pagination.pages > 1 %}
+    <nav class="pagination">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('users.index', page=pagination.prev_num, q=q, role=role, status=status) }}">‹</a>
+      {% endif %}
+      {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+        {% if p %}
+          {% if p == pagination.page %}
+            <span class="is-current">{{ p }}</span>
+          {% else %}
+            <a href="{{ url_for('users.index', page=p, q=q, role=role, status=status) }}">{{ p }}</a>
+          {% endif %}
+        {% else %}
+          <span class="is-gap">…</span>
+        {% endif %}
+      {% endfor %}
+      {% if pagination.has_next %}
+        <a href="{{ url_for('users.index', page=pagination.next_num, q=q, role=role, status=status) }}">›</a>
+      {% endif %}
+    </nav>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if (q or role or status) else 'users') }}</div>
+    <h3>{{ 'No users match your filters' if (q or role or status) else 'No users yet' }}</h3>
+    <p>{{ 'Try a different search term or clear the filters.' if (q or role or status) else 'Add your first admin user to get started.' }}</p>
+    {% if q or role or status %}
+      <a class="btn btn--ghost" href="{{ url_for('users.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('users.create') }}">{{ icon('plus') }} Add user</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

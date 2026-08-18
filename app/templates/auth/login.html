@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
+{% block title %}Sign in{% endblock %}
+
+{% block body %}
+<div class="auth">
+  <aside class="auth__aside">
+    <div class="auth__brand">
+      <div class="brand-mark">BB</div>
+      <div class="brand-text">
+        <strong>Boss Brand</strong>
+        <span>CRM Admin</span>
+      </div>
+    </div>
+
+    <div class="auth__pitch">
+      <h2>Run your B2B business from one console.</h2>
+      <p>Leads, companies, orders and enquiries from the Boss Brand website — all managed in a single place.</p>
+
+      <div class="auth__points">
+        <div class="auth__point">
+          <span class="auth__point-dot">{{ icon('target') }}</span>
+          Track every enquiry from first touch to closed deal
+        </div>
+        <div class="auth__point">
+          <span class="auth__point-dot">{{ icon('users') }}</span>
+          Role-based access for your admin, sales and support team
+        </div>
+        <div class="auth__point">
+          <span class="auth__point-dot">{{ icon('zap') }}</span>
+          Live sync with the Boss Brand B2B website
+        </div>
+      </div>
+    </div>
+
+    <div class="auth__legal">© {{ now.year }} Boss Brand. All rights reserved.</div>
+  </aside>
+
+  <main class="auth__main">
+    <div class="auth__card">
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to your Boss Brand admin account.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          {% set cat = 'error' if category in ('error', 'danger') else ('warning' if category == 'warning' else 'success') %}
+          <div class="flash flash--{{ cat }}" style="position: static; box-shadow: none; margin-bottom: 16px;">
+            {{ icon('check-circle' if cat == 'success' else 'alert') }}
+            <div>{{ message }}</div>
+          </div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="field {{ 'field--error' if form.email.errors }}">
+          {{ form.email.label }}
+          {{ form.email(class="input") }}
+          {% for error in form.email.errors %}<div class="field__error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="field {{ 'field--error' if form.password.errors }}">
+          {{ form.password.label }}
+          {{ form.password(class="input") }}
+          {% for error in form.password.errors %}<div class="field__error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="auth__row">
+          <label class="checkbox">{{ form.remember() }} Keep me signed in</label>
+          <a class="auth__link" href="#" onclick="return false;">Forgot password?</a>
+        </div>
+
+        {{ form.submit(class="btn btn--primary btn--block btn--lg") }}
+      </form>
+
+      <div class="auth__hint">
+        <strong>Test credentials</strong>
+        Email <code>{{ config.ADMIN_EMAIL }}</code><br>
+        Password <code>{{ config.ADMIN_PASSWORD }}</code>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

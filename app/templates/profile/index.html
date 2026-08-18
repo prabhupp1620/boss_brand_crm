@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block title %}My profile{% endblock %}
+{% block page_title %}My profile{% endblock %}
+{% block page_subtitle %}Your account details and password{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h2>Account details</h2>
+        <p>How your name appears across the panel</p>
+      </div>
+    </div>
+    <form method="post" novalidate>
+      {{ profile_form.hidden_tag() }}
+      <div class="card__body">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+          <div class="avatar avatar--lg">{{ current_user.initials }}</div>
+          <div>
+            <div style="font-size: 16px; font-weight: 640;">{{ current_user.name }}</div>
+            <div class="text-muted" style="font-size: 13px;">{{ current_user.email }}</div>
+            <div style="margin-top: 6px;"><span class="badge badge--info">{{ current_user.role_label }}</span></div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if profile_form.name.errors }}">
+            {{ profile_form.name.label }}
+            {{ profile_form.name(class="input") }}
+            {% for e in profile_form.name.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if profile_form.phone.errors }}">
+            {{ profile_form.phone.label }}
+            {{ profile_form.phone(class="input") }}
+            {% for e in profile_form.phone.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field field--full {{ 'field--error' if profile_form.email.errors }}">
+            {{ profile_form.email.label }}
+            {{ profile_form.email(class="input") }}
+            {% for e in profile_form.email.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="card__foot">
+        <div style="margin-left: auto;">{{ profile_form.submit(class="btn btn--primary") }}</div>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h2>Change password</h2>
+        <p>Use at least 8 characters</p>
+      </div>
+    </div>
+    <form method="post" novalidate>
+      {{ password_form.hidden_tag() }}
+      <div class="card__body">
+        <div class="field {{ 'field--error' if password_form.current_password.errors }}">
+          {{ password_form.current_password.label }}
+          {{ password_form.current_password(class="input") }}
+          {% for e in password_form.current_password.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field {{ 'field--error' if password_form.password.errors }}">
+          {{ password_form.password.label }}
+          {{ password_form.password(class="input") }}
+          {% for e in password_form.password.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field {{ 'field--error' if password_form.confirm.errors }}" style="margin-bottom: 0;">
+          {{ password_form.confirm.label }}
+          {{ password_form.confirm(class="input") }}
+          {% for e in password_form.confirm.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+      <div class="card__foot">
+        <div style="margin-left: auto;">{{ password_form.submit(class="btn btn--primary") }}</div>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

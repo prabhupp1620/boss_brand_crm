@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% set editing = user is not none %}
+{% block title %}{{ 'Edit user' if editing else 'New user' }}{% endblock %}
+{% block page_title %}{{ 'Edit user' if editing else 'New user' }}{% endblock %}
+{% block page_subtitle %}{{ user.email if editing else 'Create an admin panel account' }}{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('users.index') }}">Users</a>
+  {{ icon('chevron-right') }}
+  <span>{{ 'Edit' if editing else 'New' }}</span>
+</div>
+
+<div style="max-width: 720px;">
+  <section class="card">
+    <div class="card__head">
+      {% if editing %}<div class="avatar">{{ user.initials }}</div>{% endif %}
+      <div>
+        <h2>{{ user.name if editing else 'Account details' }}</h2>
+        <p>{{ 'Update this user’s access and details' if editing else 'They will sign in with the email and password you set here' }}</p>
+      </div>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="card__body">
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.name.errors }}">
+            {{ form.name.label }}
+            {{ form.name(class="input") }}
+            {% for e in form.name.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.email.errors }}">
+            {{ form.email.label }}
+            {{ form.email(class="input") }}
+            {% for e in form.email.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.phone.errors }}">
+            {{ form.phone.label }}
+            {{ form.phone(class="input") }}
+            {% for e in form.phone.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.role.errors }}">
+            {{ form.role.label }}
+            {{ form.role(class="select") }}
+            {% for e in form.role.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.password.errors }}">
+            {{ form.password.label }}
+            {{ form.password(class="input") }}
+            {% for e in form.password.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+            <div class="field__hint">
+              {{ 'Leave blank to keep the current password.' if editing else 'Minimum 8 characters.' }}
+            </div>
+          </div>
+
+          <div class="field {{ 'field--error' if form.confirm.errors }}">
+            {{ form.confirm.label }}
+            {{ form.confirm(class="input") }}
+            {% for e in form.confirm.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        {% if not (editing and user.id == current_user.id) %}
+        <div class="field" style="margin-bottom: 0;">
+          <label class="checkbox">{{ form.is_active() }} Account is active</label>
+          <div class="field__hint">Inactive users cannot sign in to the admin panel.</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="card__foot">
+        <a class="btn btn--ghost" href="{{ url_for('users.index') }}">Cancel</a>
+        <div style="margin-left: auto;">
+          {{ form.submit(class="btn btn--primary") }}
+        </div>
+      </div>
+    </form>
+  </section>
+
+  {% if editing %}
+  <p class="text-muted" style="margin-top: 14px; font-size: 12.5px;">
+    Created {{ user.created_at.strftime('%d %b %Y, %H:%M') }} ·
+    Last login {{ user.last_login_at.strftime('%d %b %Y, %H:%M') if user.last_login_at else 'never' }}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

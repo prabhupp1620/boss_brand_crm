@@ -1,0 +1,24 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtualenvs
+venv/
+vrmenv/
+.venv/
+
+# Migrations artifacts are kept, but not the local SQLite scratch DBs
+*.sqlite3
+*.db
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
