@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/pagination.html" import render as render_pagination %}
+
+{% block title %}Contact topics{% endblock %}
+{% block page_title %}Contact topics{% endblock %}
+{% block page_subtitle %}The subject dropdown shown on the contact form{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('contact_topics.create') }}">{{ icon('plus') }} New topic</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search topic…" class="input">
+    </div>
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('contact_topics.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if topics %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Slug</th>
+          <th>Form label</th>
+          <th>Sort order</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in topics %}
+        <tr>
+          <td><strong>{{ t.name }}</strong></td>
+          <td class="text-muted text-mono">{{ t.slug }}</td>
+          <td class="text-muted text-mono">{{ t.form_label or '—' }}</td>
+          <td class="text-muted text-mono">{{ t.sort_order }}</td>
+          <td>
+            {% if t.is_active %}
+              <span class="badge badge--success">Active</span>
+            {% else %}
+              <span class="badge badge--danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('contact_topics.edit', topic_id=t.id) }}">{{ icon('edit') }} Edit</a>
+            <form method="post" action="{{ url_for('contact_topics.toggle', topic_id=t.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--ghost btn--sm" type="submit" title="{{ 'Deactivate' if t.is_active else 'Activate' }}">
+                {{ icon('power') }} {{ 'Disable' if t.is_active else 'Enable' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('contact_topics.delete', topic_id=t.id) }}"
+                  data-confirm="Delete “{{ t.name }}”? This cannot be undone.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ render_pagination(pagination, 'contact_topics.index', noun='topic', q=q) }}
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if q else 'layers') }}</div>
+    <h3>{{ 'No topics match your search' if q else 'No contact topics yet' }}</h3>
+    <p>{{ 'Try a different search term.' if q else 'Add the subject options shown on the contact form.' }}</p>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('contact_topics.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('contact_topics.create') }}">{{ icon('plus') }} Add topic</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -18,6 +18,11 @@ vrmenv/
 *.sqlite3
 *.db
 
+# User-uploaded images (local storage backend only — production uses a bucket)
+/uploads/*
+!/uploads/*/
+!/uploads/*/.gitkeep
+
 # macOS / editors
 .DS_Store
 .idea/

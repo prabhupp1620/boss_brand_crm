@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% set editing = method is not none %}
+{% block title %}{{ 'Edit branding method' if editing else 'New branding method' }}{% endblock %}
+{% block page_title %}{{ 'Edit branding method' if editing else 'New branding method' }}{% endblock %}
+{% block page_subtitle %}{{ method.slug if editing else 'Add a checkbox option to the quote form' }}{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('branding.index') }}">Branding methods</a>
+  {{ icon('chevron-right') }}
+  <span>{{ 'Edit' if editing else 'New' }}</span>
+</div>
+
+<div style="max-width: 560px;">
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h2>{{ method.name if editing else 'Branding method details' }}</h2>
+        <p>Shown as a checkbox on the site's /quote form</p>
+      </div>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="card__body">
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.name.errors }}">
+            {{ form.name.label }}
+            {{ form.name(class="input", id="name") }}
+            {% for e in form.name.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.slug.errors }}">
+            {{ form.slug.label }}
+            {{ form.slug(class="input") }}
+            {% for e in form.slug.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field field--full {{ 'field--error' if form.form_label.errors }}">
+            {{ form.form_label.label }}
+            {{ form.form_label(class="input") }}
+            <div class="field__hint">The exact value posted by the quote form's checkbox — leave blank to match by name.</div>
+            {% for e in form.form_label.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.sort_order.errors }}">
+            {{ form.sort_order.label }}
+            {{ form.sort_order(class="input") }}
+            {% for e in form.sort_order.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom: 0;">
+          <label class="checkbox">{{ form.is_active() }} Active</label>
+          <div class="field__hint">Inactive methods are hidden from the quote form.</div>
+        </div>
+      </div>
+
+      <div class="card__foot">
+        <a class="btn btn--ghost" href="{{ url_for('branding.index') }}">Cancel</a>
+        <div style="margin-left: auto;">
+          {{ form.submit(class="btn btn--primary") }}
+        </div>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% set editing = size is not none %}
+{% block title %}{{ 'Edit size' if editing else 'New size' }}{% endblock %}
+{% block page_title %}{{ 'Edit size' if editing else 'New size' }}{% endblock %}
+{% block page_subtitle %}{{ size.label if editing else 'Add a size label to the shared master list' }}{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('sizes.index') }}">Sizes</a>
+  {{ icon('chevron-right') }}
+  <span>{{ 'Edit' if editing else 'New' }}</span>
+</div>
+
+<div style="max-width: 480px;">
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h2>{{ size.label if editing else 'Size details' }}</h2>
+        <p>Used across product size pickers</p>
+      </div>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="card__body">
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.label.errors }}">
+            {{ form.label.label }}
+            {{ form.label(class="input") }}
+            {% for e in form.label.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.sort_order.errors }}">
+            {{ form.sort_order.label }}
+            {{ form.sort_order(class="input") }}
+            {% for e in form.sort_order.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card__foot">
+        <a class="btn btn--ghost" href="{{ url_for('sizes.index') }}">Cancel</a>
+        <div style="margin-left: auto;">
+          {{ form.submit(class="btn btn--primary") }}
+        </div>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

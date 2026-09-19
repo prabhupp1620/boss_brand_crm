@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/pagination.html" import render as render_pagination %}
+
+{% block title %}Colours{% endblock %}
+{% block page_title %}Colours{% endblock %}
+{% block page_subtitle %}The colour palette products can be offered in{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('colours.create') }}">{{ icon('plus') }} New colour</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search colour name…" class="input">
+    </div>
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('colours.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if colours %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Colour</th>
+          <th>Hex</th>
+          <th>Sort order</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in colours %}
+        <tr>
+          <td>
+            <div class="cell-user">
+              <span style="width: 22px; height: 22px; border-radius: 50%; flex: 0 0 22px; background: {{ c.hex }}; border: 1px solid var(--border-strong);"></span>
+              <strong>{{ c.name }}</strong>
+            </div>
+          </td>
+          <td class="text-muted text-mono">{{ c.hex }}</td>
+          <td class="text-muted text-mono">{{ c.sort_order }}</td>
+          <td>
+            {% if c.is_active %}
+              <span class="badge badge--success">Active</span>
+            {% else %}
+              <span class="badge badge--danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('colours.edit', colour_id=c.id) }}">{{ icon('edit') }} Edit</a>
+            <form method="post" action="{{ url_for('colours.toggle', colour_id=c.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--ghost btn--sm" type="submit" title="{{ 'Deactivate' if c.is_active else 'Activate' }}">
+                {{ icon('power') }} {{ 'Disable' if c.is_active else 'Enable' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('colours.delete', colour_id=c.id) }}"
+                  data-confirm="Delete “{{ c.name }}”? This cannot be undone.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ render_pagination(pagination, 'colours.index', noun='colour', q=q) }}
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if q else 'droplet') }}</div>
+    <h3>{{ 'No colours match your search' if q else 'No colours yet' }}</h3>
+    <p>{{ 'Try a different search term.' if q else 'Add your first colour to get started.' }}</p>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('colours.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('colours.create') }}">{{ icon('plus') }} Add colour</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

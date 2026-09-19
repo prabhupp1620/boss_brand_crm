@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/pagination.html" import render as render_pagination %}
+
+{% block title %}Products{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block page_subtitle %}Every SKU family sold on the site{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('products.create') }}">{{ icon('plus') }} New product</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name, slug or fabric…" class="input">
+    </div>
+
+    <select name="collection_id" class="select" data-autosubmit style="width: auto; min-width: 170px;">
+      <option value="">All collections</option>
+      {% for c in collections %}
+        <option value="{{ c.id }}" {{ 'selected' if collection_id == c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="status" class="select" data-autosubmit style="width: auto; min-width: 150px;">
+      <option value="">All statuses</option>
+      <option value="in-stock"      {{ 'selected' if status == 'in-stock' }}>In stock</option>
+      <option value="low"           {{ 'selected' if status == 'low' }}>Low</option>
+      <option value="made-to-order" {{ 'selected' if status == 'made-to-order' }}>Made to order</option>
+    </select>
+
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q or collection_id or status %}
+      <a class="btn btn--ghost" href="{{ url_for('products.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if products %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Collection</th>
+          <th>Fabric</th>
+          <th><abbr title="Minimum Order Quantity" style="text-decoration-style: dotted;">MOQ</abbr></th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div class="cell-user">
+              {% if p.primary_image %}
+                <img src="{{ p.primary_image.url }}" alt="" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex: 0 0 38px; border: 1px solid var(--border);">
+              {% else %}
+                <div class="avatar avatar--sm">{{ icon('image') }}</div>
+              {% endif %}
+              <div>
+                <strong>{{ p.name }}</strong>
+                <span>{{ p.slug }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted">{{ p.collection.name if p.collection else '—' }}</td>
+          <td class="text-muted">{{ p.fabric }}{% if p.gsm %} · {{ p.gsm }} GSM{% endif %}</td>
+          <td class="text-muted text-mono">{{ p.moq }}</td>
+          <td>
+            <span class="badge {{ 'badge--success' if p.status == 'in-stock' else ('badge--warning' if p.status == 'low' else 'badge--neutral') }}">
+              {{ p.status_label }}
+            </span>
+          </td>
+          <td>
+            {% if p.is_active %}
+              <span class="badge badge--success">Active</span>
+            {% else %}
+              <span class="badge badge--danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('products.edit', product_id=p.id) }}">{{ icon('edit') }} Edit</a>
+            <form method="post" action="{{ url_for('products.toggle', product_id=p.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--ghost btn--sm" type="submit" title="{{ 'Deactivate' if p.is_active else 'Activate' }}">
+                {{ icon('power') }} {{ 'Disable' if p.is_active else 'Enable' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('products.delete', product_id=p.id) }}"
+                  data-confirm="Delete “{{ p.name }}”? This removes its images, sizes, colours, price tiers and variants too.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ render_pagination(pagination, 'products.index', noun='product', q=q, collection_id=collection_id, status=status) }}
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if (q or collection_id or status) else 'package') }}</div>
+    <h3>{{ 'No products match your filters' if (q or collection_id or status) else 'No products yet' }}</h3>
+    <p>{{ 'Try a different search term or clear the filters.' if (q or collection_id or status) else 'Add your first product to get started.' }}</p>
+    {% if q or collection_id or status %}
+      <a class="btn btn--ghost" href="{{ url_for('products.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('products.create') }}">{{ icon('plus') }} Add product</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

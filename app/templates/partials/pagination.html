@@ -1,0 +1,28 @@
+{% macro render(pagination, endpoint, noun='item') %}
+<div class="card__foot">
+  <span class="text-muted">
+    Showing {{ pagination.items | length }} of {{ pagination.total }} {{ noun }}{{ '' if pagination.total == 1 else 's' }}
+  </span>
+  {% if pagination.pages > 1 %}
+  <nav class="pagination">
+    {% if pagination.has_prev %}
+      <a href="{{ url_for(endpoint, page=pagination.prev_num, **kwargs) }}">‹</a>
+    {% endif %}
+    {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+      {% if p %}
+        {% if p == pagination.page %}
+          <span class="is-current">{{ p }}</span>
+        {% else %}
+          <a href="{{ url_for(endpoint, page=p, **kwargs) }}">{{ p }}</a>
+        {% endif %}
+      {% else %}
+        <span class="is-gap">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+      <a href="{{ url_for(endpoint, page=pagination.next_num, **kwargs) }}">›</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endmacro %}

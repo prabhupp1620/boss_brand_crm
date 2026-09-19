@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/pagination.html" import render as render_pagination %}
+
+{% block title %}Branding methods{% endblock %}
+{% block page_title %}Branding methods{% endblock %}
+{% block page_subtitle %}The checkbox options shown on the quote form{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('branding.create') }}">{{ icon('plus') }} New method</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search branding method…" class="input">
+    </div>
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('branding.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if methods %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Slug</th>
+          <th>Form label</th>
+          <th>Sort order</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in methods %}
+        <tr>
+          <td><strong>{{ m.name }}</strong></td>
+          <td class="text-muted text-mono">{{ m.slug }}</td>
+          <td class="text-muted text-mono">{{ m.form_label or '—' }}</td>
+          <td class="text-muted text-mono">{{ m.sort_order }}</td>
+          <td>
+            {% if m.is_active %}
+              <span class="badge badge--success">Active</span>
+            {% else %}
+              <span class="badge badge--danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('branding.edit', method_id=m.id) }}">{{ icon('edit') }} Edit</a>
+            <form method="post" action="{{ url_for('branding.toggle', method_id=m.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--ghost btn--sm" type="submit" title="{{ 'Deactivate' if m.is_active else 'Activate' }}">
+                {{ icon('power') }} {{ 'Disable' if m.is_active else 'Enable' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('branding.delete', method_id=m.id) }}"
+                  data-confirm="Delete “{{ m.name }}”? This cannot be undone.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ render_pagination(pagination, 'branding.index', noun='method', q=q) }}
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if q else 'tag') }}</div>
+    <h3>{{ 'No branding methods match your search' if q else 'No branding methods yet' }}</h3>
+    <p>{{ 'Try a different search term.' if q else 'Add the checkbox options shown on the quote form.' }}</p>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('branding.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('branding.create') }}">{{ icon('plus') }} Add branding method</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -30,6 +30,17 @@
   --info: #0284c7;
   --info-soft: #f0f9ff;
 
+  /* Chart categorical palette — validated ordering, CVD-safe (see dataviz skill) */
+  --chart-blue: #2a78d6;
+  --chart-orange: #eb6834;
+  --chart-aqua: #1baf7a;
+  --chart-yellow: #eda100;
+  --chart-magenta: #e87ba4;
+  --chart-green: #008300;
+  --chart-violet: #4a3aa7;
+  --chart-red: #e34948;
+  --chart-track: var(--surface-2);
+
   --sidebar-w: 264px;
   --topbar-h: 68px;
   --radius: 14px;
@@ -61,6 +72,15 @@
   --warning-soft: #3a2408;
   --danger-soft: #3c1113;
   --info-soft: #06263a;
+
+  --chart-blue: #3987e5;
+  --chart-orange: #d95926;
+  --chart-aqua: #199e70;
+  --chart-yellow: #c98500;
+  --chart-magenta: #d55181;
+  --chart-green: #008300;
+  --chart-violet: #9085e9;
+  --chart-red: #e66767;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
@@ -244,9 +264,8 @@ table { border-collapse: collapse; width: 100%; }
 }
 .icon-btn:hover { background: var(--surface-2); border-color: var(--border-strong); color: var(--ink); }
 .icon-btn svg { width: 17px; height: 17px; stroke-width: 1.8; }
-.icon-btn .icon-moon { display: none; }
-[data-theme="dark"] .icon-btn .icon-moon { display: block; }
-[data-theme="dark"] .icon-btn .icon-sun { display: none; }
+/* Sun/moon cross-fade lives in the "Motion & abstract accents" section below —
+   display:none/block there would fight the opacity+rotate transition. */
 
 .sidebar-toggle { display: none; }
 
@@ -500,6 +519,48 @@ select {
 }
 .form-grid .field--full { grid-column: 1 / -1; }
 
+.checkbox-grid ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; }
+.checkbox-grid li { display: flex; }
+.checkbox-grid label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 550;
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.checkbox-grid label:has(input:checked) {
+  border-color: var(--brand-400);
+  background: var(--brand-soft);
+  color: var(--brand-500);
+}
+.checkbox-grid input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--brand-500); }
+
+.inline-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.inline-form .field { margin-bottom: 0; flex: 1 1 150px; }
+.inline-form .field--sm { flex: 0 1 110px; }
+
+.section-label {
+  font-size: 12.5px;
+  font-weight: 620;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+}
+.swatch-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
 .checkbox {
   display: inline-flex;
   align-items: center;
@@ -741,6 +802,198 @@ select {
   .page-head__actions { margin-left: 0; width: 100%; }
 }
 
+/* ---------------------------------------------------------------------------
+   Motion & abstract accents
+--------------------------------------------------------------------------- */
+
+/* Smooth native cross-fade between full page loads, where supported —
+   pure progressive enhancement, a no-op everywhere else. */
+@view-transition {
+  navigation: auto;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-18px, 22px) scale(1.07); }
+}
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(1.08); }
+}
+
+/* Entrance: cards and stat tiles settle in on load, staggered by app.js */
+.card, .stat {
+  animation: fade-up 0.5s cubic-bezier(0.16, 0.8, 0.3, 1) backwards;
+}
+
+/* Clickable dashboard cards: one real link, stretched over the whole card
+   (the "stretched-link" pattern) — keeps semantics valid instead of nesting
+   interactive elements inside an <a>, while the whole card reads as one target. */
+.stat {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.card--linked {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card--linked:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+/* Anything genuinely clickable inside a linked card's body (e.g. the "Add
+   user" empty-state button) must float above the stretched overlay. */
+.card--linked .card__body a,
+.card--linked .card__body button {
+  position: relative;
+  z-index: 2;
+}
+
+/* A faint ambient glow behind every page's content — abstract, not decorative
+   clutter: opacity is low enough to read as depth, not a shape. */
+.content { position: relative; }
+.content::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: 6%;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, var(--brand-500) 0%, transparent 72%);
+  opacity: 0.05;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+[data-theme="dark"] .content::before { opacity: 0.09; }
+.content__inner { position: relative; z-index: 1; }
+
+/* Sidebar brand mark: a soft breathing glow behind the logo */
+.brand-mark { position: relative; }
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  background: var(--brand-grad);
+  opacity: 0.3;
+  filter: blur(10px);
+  z-index: -1;
+  animation: pulse-glow 3.2s ease-in-out infinite;
+}
+
+/* Sidebar links: a gentle rightward nudge on hover */
+.nav-link { transition: background 0.16s ease, color 0.16s ease, padding-left 0.16s ease; }
+.nav-link:not(.is-soon):hover { padding-left: 15px; }
+
+/* Theme toggle: rotate + cross-fade instead of an abrupt swap */
+.icon-btn { position: relative; }
+.icon-btn svg { grid-area: 1 / 1; transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.icon-btn .icon-sun  { opacity: 1; transform: rotate(0deg) scale(1); }
+.icon-btn .icon-moon { display: block; opacity: 0; transform: rotate(-90deg) scale(0.4); }
+[data-theme="dark"] .icon-btn .icon-sun  { opacity: 0; transform: rotate(90deg) scale(0.4); }
+[data-theme="dark"] .icon-btn .icon-moon { opacity: 1; transform: rotate(0deg) scale(1); }
+
+/* Buttons: a touch more tactile feedback */
+.btn:active { transform: translateY(1px) scale(0.97); }
+.btn--primary:hover { transform: translateY(-1px); }
+.icon-btn:active { transform: scale(0.9); }
+
+/* Empty states: a faint abstract glow + a slow float on the icon */
+.empty { position: relative; overflow: hidden; }
+.empty::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: var(--brand-grad);
+  opacity: 0.07;
+  filter: blur(42px);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.empty__icon { position: relative; animation: float-soft 3.4s ease-in-out infinite; }
+
+/* Auth page: floating gradient blobs + a soft dotted texture, staggered copy */
+.auth__aside {
+  background-image:
+    linear-gradient(150deg, #12162e 0%, #1c1b4b 45%, #2a1d5e 100%),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: auto, 22px 22px;
+}
+.auth__aside::before { animation: float-blob 9s ease-in-out infinite; }
+.auth__aside::after  { animation: float-blob 11s ease-in-out infinite reverse; }
+.auth__brand, .auth__pitch h2, .auth__pitch p, .auth__points, .auth__legal {
+  animation: fade-up 0.6s cubic-bezier(0.16, 0.8, 0.3, 1) backwards;
+}
+.auth__pitch p    { animation-delay: 0.06s; }
+.auth__points     { animation-delay: 0.12s; }
+.auth__legal      { animation-delay: 0.18s; }
+.auth__card { animation: fade-up 0.6s cubic-bezier(0.16, 0.8, 0.3, 1) backwards; animation-delay: 0.05s; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------------------------------------------------------------------------
+   Charts — bar chart, donut chart, shared legend
+--------------------------------------------------------------------------- */
+.bar-chart { display: flex; flex-direction: column; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 150px 1fr 46px; align-items: center; gap: 10px; }
+.bar-row__label {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-row__track {
+  height: 14px;
+  border-radius: 999px;
+  background: var(--chart-track);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.bar-row__fill {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 3px;
+  /* A hairline ring so a near-white/near-track swatch (e.g. the colour
+     "White") still reads as a shape instead of vanishing into the track. */
+  box-shadow: inset 0 0 0 1px rgba(11, 11, 11, 0.12);
+  transition: width 0.4s ease;
+}
+.bar-row__value { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink-2); text-align: right; }
+
+.chart-empty { padding: 30px 0; text-align: center; color: var(--muted); font-size: 13px; }
+
+.donut-wrap { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.donut-svg { flex: 0 0 auto; }
+.donut-total { font-size: 20px; font-weight: 680; fill: var(--ink); }
+.donut-total-label { font-size: 10.5px; fill: var(--muted); }
+
+.chart-legend { display: flex; flex-direction: column; gap: 9px; flex: 1 1 160px; min-width: 140px; }
+.chart-legend__row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+.chart-legend__dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px; }
+.chart-legend__label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chart-legend__value { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }

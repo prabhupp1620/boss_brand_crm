@@ -1,0 +1,292 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% set editing = lead is not none %}
+{% block title %}{{ lead.reference if editing else 'New lead' }}{% endblock %}
+{% block page_title %}{{ lead.reference if editing else 'New lead' }}{% endblock %}
+{% block page_subtitle %}{{ lead.company if editing else 'Manually add a quote request' }}{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('leads.index') }}">Leads</a>
+  {{ icon('chevron-right') }}
+  <span>{{ lead.reference if editing else 'New' }}</span>
+</div>
+
+<div style="max-width: 880px;">
+
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h2>Contact details</h2>
+        <p>Who asked for the quote, and where it ships</p>
+      </div>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="card__body">
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.name.errors }}">
+            {{ form.name.label }}
+            {{ form.name(class="input") }}
+            {% for e in form.name.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.company.errors }}">
+            {{ form.company.label }}
+            {{ form.company(class="input") }}
+            {% for e in form.company.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.email.errors }}">
+            {{ form.email.label }}
+            {{ form.email(class="input") }}
+            {% for e in form.email.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.phone.errors }}">
+            {{ form.phone.label }}
+            {{ form.phone(class="input") }}
+            {% for e in form.phone.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field field--full {{ 'field--error' if form.destination.errors }}">
+            {{ form.destination.label }}
+            {{ form.destination(class="input") }}
+            {% for e in form.destination.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.deadline.errors }}">
+            {{ form.deadline.label }}
+            {{ form.deadline(class="input", type="date") }}
+            {% for e in form.deadline.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="field field--full {{ 'field--error' if form.notes.errors }}">
+          {{ form.notes.label }}
+          {{ form.notes(class="input", rows="3") }}
+          {% for e in form.notes.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="section-label">Pipeline</div>
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.status.errors }}">
+            {{ form.status.label }}
+            {{ form.status(class="select") }}
+            {% for e in form.status.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.assigned_to.errors }}">
+            {{ form.assigned_to.label }}
+            {{ form.assigned_to(class="input") }}
+            {% for e in form.assigned_to.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field field--full {{ 'field--error' if form.status_note.errors }}">
+            {{ form.status_note.label }}
+            {{ form.status_note(class="input") }}
+            {% for e in form.status_note.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.quoted_at.errors }}">
+            {{ form.quoted_at.label }}
+            {{ form.quoted_at(class="input", type="datetime-local") }}
+            {% for e in form.quoted_at.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.quoted_total.errors }}">
+            {{ form.quoted_total.label }}
+            {{ form.quoted_total(class="input") }}
+            {% for e in form.quoted_total.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="section-label">Branding methods requested</div>
+        <div class="field field--full checkbox-grid {{ 'field--error' if form.branding_ids.errors }}" style="margin-bottom: 0;">
+          {{ form.branding_ids() }}
+          {% if not form.branding_ids.choices %}<p class="text-muted" style="font-size:12.5px;">No branding methods yet — <a href="{{ url_for('branding.create') }}">add one</a>.</p>{% endif %}
+          {% for e in form.branding_ids.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="card__foot">
+        <a class="btn btn--ghost" href="{{ url_for('leads.index') }}">Cancel</a>
+        <div style="margin-left: auto;">
+          {{ form.submit(class="btn btn--primary") }}
+        </div>
+      </div>
+    </form>
+  </section>
+
+  {% if not editing %}
+  <p class="text-muted" style="margin-top: 14px; font-size: 12.5px;">
+    Save the lead first — basket lines and size runs can be added once it exists. A reference number (RFQ-XXXXXX) is generated automatically.
+  </p>
+  {% else %}
+
+  <section class="card" style="margin-top: 20px;">
+    <div class="card__head">
+      <div>
+        <h2>{{ icon('layers') }} Source &amp; tracking</h2>
+        <p>Captured automatically when the form was submitted — read only</p>
+      </div>
+    </div>
+    <div class="card__body">
+      <div class="form-grid" style="row-gap: 12px;">
+        <div><span class="label">Reference</span><div class="text-mono">{{ lead.reference }}</div></div>
+        <div><span class="label">Submitted</span><div class="text-mono">{{ lead.created_at.strftime('%d %b %Y, %H:%M') }}</div></div>
+        <div><span class="label">Prefill product</span><div class="text-mono">{{ lead.prefill_product or '—' }}</div></div>
+        <div><span class="label">Prefill qty</span><div class="text-mono">{{ lead.prefill_qty or '—' }}</div></div>
+        <div><span class="label">Prefill branding</span><div class="text-mono">{{ lead.prefill_branding or '—' }}</div></div>
+        <div><span class="label">Source page</span><div class="text-mono" style="word-break: break-all;">{{ lead.source_page or '—' }}</div></div>
+        <div><span class="label">Referrer</span><div class="text-mono" style="word-break: break-all;">{{ lead.referrer or '—' }}</div></div>
+        <div><span class="label">UTM source / medium / campaign</span><div class="text-mono">{{ lead.utm_source or '—' }} / {{ lead.utm_medium or '—' }} / {{ lead.utm_campaign or '—' }}</div></div>
+        <div><span class="label">IP address</span><div class="text-mono">{{ lead.ip_address or '—' }}</div></div>
+        <div><span class="label">User agent</span><div class="text-mono" style="word-break: break-all;">{{ lead.user_agent or '—' }}</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top: 20px;">
+    <div class="card__head">
+      <div>
+        <h2>{{ icon('package') }} Basket lines <span class="text-muted" style="font-weight: 400;">— {{ lead.total_units }} unit{{ '' if lead.total_units == 1 else 's' }} total</span></h2>
+        <p>Each product + colourway requested, with its size run</p>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if lead.lines %}
+        {% for line in lead.lines %}
+        <div class="card" style="margin-bottom: 14px; box-shadow: none;">
+          <div class="card__body">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <strong>{{ line.product_name or line.product_slug }}</strong>
+                <span class="text-muted"> · {{ line.product_slug }}</span><br>
+                {% if line.colour_name %}
+                  <span class="text-muted">
+                    {% if line.colour_hex %}<span class="swatch-dot" style="background: {{ line.colour_hex }};"></span>{% endif %}
+                    {{ line.colour_name }}
+                  </span>
+                {% endif %}
+                {% if line.quoted_unit_price %}<span class="text-muted"> · Rs. {{ '%.2f' % line.quoted_unit_price }}/unit</span>{% endif %}
+                {% if line.line_note %}<div class="text-muted" style="font-size: 12px; margin-top: 4px;">{{ line.line_note }}</div>{% endif %}
+              </div>
+              <div style="display:flex; align-items:center; gap: 10px;">
+                <span class="badge badge--neutral">{{ line.line_units }} unit{{ '' if line.line_units == 1 else 's' }}</span>
+                <form method="post" action="{{ url_for('leads.delete_line', lead_id=lead.id, line_id=line.id) }}" data-confirm="Remove this basket line and its size run?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+                </form>
+              </div>
+            </div>
+
+            {% if line.sizes %}
+            <div class="table-wrap" style="margin-bottom: 12px;">
+              <table class="table">
+                <thead><tr><th>Size</th><th>Units</th><th style="text-align:right;">Actions</th></tr></thead>
+                <tbody>
+                  {% for sz in line.sizes %}
+                  <tr>
+                    <td class="text-mono">{{ sz.size_label }}</td>
+                    <td class="text-mono">{{ sz.units }}</td>
+                    <td class="cell-actions">
+                      <form method="post" action="{{ url_for('leads.delete_line_size', lead_id=lead.id, line_id=line.id, size_row_id=sz.id) }}" data-confirm="Remove size {{ sz.size_label }}?">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted" style="font-size: 12.5px; margin-bottom: 12px;">No size breakdown — using the flat unit count above.</p>
+            {% endif %}
+
+            {% set sf = size_forms[line.id] %}
+            <form method="post" action="{{ url_for('leads.add_line_size', lead_id=lead.id, line_id=line.id) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div class="field field--sm">
+                {{ sf.size_label.label }}
+                {{ sf.size_label(class="select") }}
+              </div>
+              <div class="field field--sm">
+                {{ sf.units.label }}
+                {{ sf.units(class="input") }}
+              </div>
+              {{ sf.submit(class="btn btn--ghost btn--sm") }}
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">No basket lines yet.</p>
+      {% endif %}
+
+      <div class="form-divider"></div>
+      <div class="section-label" style="margin-top: 14px;">Add a basket line</div>
+      <form method="post" action="{{ url_for('leads.add_line', lead_id=lead.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-grid">
+          <div class="field">
+            {{ line_form.product_id.label }}
+            {{ line_form.product_id(class="select", id="lineProductId") }}
+          </div>
+          <div class="field">
+            {{ line_form.product_slug.label }}
+            {{ line_form.product_slug(class="input", id="lineProductSlug") }}
+          </div>
+          <div class="field">
+            {{ line_form.product_name.label }}
+            {{ line_form.product_name(class="input", id="lineProductName") }}
+          </div>
+          <div class="field">
+            {{ line_form.colour_name.label }}
+            {{ line_form.colour_name(class="input") }}
+          </div>
+          <div class="field">
+            {{ line_form.colour_hex.label }}
+            {{ line_form.colour_hex(class="input", placeholder="#1F2A44") }}
+          </div>
+          <div class="field">
+            {{ line_form.line_units.label }}
+            {{ line_form.line_units(class="input") }}
+          </div>
+          <div class="field">
+            {{ line_form.quoted_unit_price.label }}
+            {{ line_form.quoted_unit_price(class="input") }}
+          </div>
+          <div class="field field--full">
+            {{ line_form.line_note.label }}
+            {{ line_form.line_note(class="input") }}
+          </div>
+        </div>
+        {{ line_form.submit(class="btn btn--ghost") }}
+      </form>
+    </div>
+  </section>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if editing %}
+<script>
+  (function () {
+    var products = {{ product_choices | tojson }};
+    var select = document.getElementById("lineProductId");
+    var slugField = document.getElementById("lineProductSlug");
+    var nameField = document.getElementById("lineProductName");
+    if (!select || !slugField || !nameField) return;
+    select.addEventListener("change", function () {
+      var match = products.find(function (p) { return String(p[0]) === select.value; });
+      if (!match || match[0] === 0) return;
+      var label = match[1];
+      var slugPart = label.match(/\(([^)]+)\)$/);
+      slugField.value = slugPart ? slugPart[1] : slugField.value;
+      nameField.value = slugPart ? label.slice(0, label.length - slugPart[0].length).trim() : label;
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

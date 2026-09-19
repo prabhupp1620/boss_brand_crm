@@ -12,7 +12,7 @@
 {% block content %}
 <div class="stat-grid">
   {% for s in stats %}
-  <div class="stat">
+  <a class="stat" href="{{ s.href }}">
     <div class="stat__top">
       <div>
         <div class="stat__label">{{ s.label }}</div>
@@ -23,19 +23,173 @@
       </div>
       <div class="stat__icon stat__icon--{{ s.tone }}">{{ icon(s.icon) }}</div>
     </div>
-  </div>
+  </a>
   {% endfor %}
 </div>
 
 <div class="grid-2">
-  <section class="card">
+  <section class="card card--linked">
+    <div class="card__head">
+      <div>
+        <h2>Products by collection</h2>
+        <p>Active SKU count per department</p>
+      </div>
+      <div class="card__actions">
+        <a class="btn btn--ghost btn--sm stretched-link" href="{{ url_for('products.index') }}">View all</a>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if products_by_collection %}
+      <div class="bar-chart">
+        {% for row in products_by_collection %}
+        <div class="bar-row">
+          <div class="bar-row__label" title="{{ row.label }}">{{ row.label }}</div>
+          <div class="bar-row__track">
+            <div class="bar-row__fill" style="width: {{ row.pct }}%; background: var(--chart-blue);"></div>
+          </div>
+          <div class="bar-row__value">{{ row.count }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="chart-empty">No collections yet.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card card--linked">
+    <div class="card__head">
+      <div>
+        <h2>Leads by status</h2>
+        <p>Quote request pipeline</p>
+      </div>
+      <div class="card__actions">
+        <a class="btn btn--ghost btn--sm stretched-link" href="{{ url_for('leads.index') }}">View all</a>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if lead_total %}
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="52" fill="none" stroke="var(--chart-track)" stroke-width="18"/>
+          <g transform="rotate(-90 70 70)">
+            {% for seg in lead_segments %}
+              {% if seg.count %}
+              <circle cx="70" cy="70" r="52" fill="none" stroke="var({{ seg.color_var }})" stroke-width="18"
+                      stroke-dasharray="{{ seg.dasharray }}" stroke-dashoffset="{{ seg.dashoffset }}">
+                <title>{{ seg.label }}: {{ seg.count }} ({{ seg.pct }}%)</title>
+              </circle>
+              {% endif %}
+            {% endfor %}
+          </g>
+          <text x="70" y="67" text-anchor="middle" class="donut-total">{{ lead_total }}</text>
+          <text x="70" y="83" text-anchor="middle" class="donut-total-label">total</text>
+        </svg>
+        <div class="chart-legend">
+          {% for seg in lead_segments %}
+          {% if seg.count %}
+          <div class="chart-legend__row">
+            <span class="chart-legend__dot" style="background: var({{ seg.color_var }});"></span>
+            <span class="chart-legend__label">{{ seg.label }}</span>
+            <span class="chart-legend__value">{{ seg.count }}</span>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="chart-empty">No leads yet.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="grid-2" style="margin-top: 18px;">
+  <section class="card card--linked">
+    <div class="card__head">
+      <div>
+        <h2>Colours in use</h2>
+        <p>Most-used swatches across the catalogue</p>
+      </div>
+      <div class="card__actions">
+        <a class="btn btn--ghost btn--sm stretched-link" href="{{ url_for('colours.index') }}">View all</a>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if colours_in_use %}
+      <div class="bar-chart">
+        {% for row in colours_in_use %}
+        <div class="bar-row">
+          <div class="bar-row__label" title="{{ row.name }}">{{ row.name }}</div>
+          <div class="bar-row__track">
+            <div class="bar-row__fill" style="width: {{ row.pct }}%; background: {{ row.hex }};"></div>
+          </div>
+          <div class="bar-row__value">{{ row.count }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="chart-empty">No products have a colour assigned yet.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card card--linked">
+    <div class="card__head">
+      <div>
+        <h2>Enquiries by status</h2>
+        <p>Contact-us submissions</p>
+      </div>
+      <div class="card__actions">
+        <a class="btn btn--ghost btn--sm stretched-link" href="{{ url_for('contacts.index') }}">View all</a>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if contact_total %}
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="52" fill="none" stroke="var(--chart-track)" stroke-width="18"/>
+          <g transform="rotate(-90 70 70)">
+            {% for seg in contact_segments %}
+              {% if seg.count %}
+              <circle cx="70" cy="70" r="52" fill="none" stroke="var({{ seg.color_var }})" stroke-width="18"
+                      stroke-dasharray="{{ seg.dasharray }}" stroke-dashoffset="{{ seg.dashoffset }}">
+                <title>{{ seg.label }}: {{ seg.count }} ({{ seg.pct }}%)</title>
+              </circle>
+              {% endif %}
+            {% endfor %}
+          </g>
+          <text x="70" y="67" text-anchor="middle" class="donut-total">{{ contact_total }}</text>
+          <text x="70" y="83" text-anchor="middle" class="donut-total-label">total</text>
+        </svg>
+        <div class="chart-legend">
+          {% for seg in contact_segments %}
+          {% if seg.count %}
+          <div class="chart-legend__row">
+            <span class="chart-legend__dot" style="background: var({{ seg.color_var }});"></span>
+            <span class="chart-legend__label">{{ seg.label }}</span>
+            <span class="chart-legend__value">{{ seg.count }}</span>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="chart-empty">No enquiries yet.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="grid-2" style="margin-top: 18px;">
+  <section class="card card--linked">
     <div class="card__head">
       <div>
         <h2>Recently added users</h2>
         <p>The newest accounts in your admin panel</p>
       </div>
       <div class="card__actions">
-        <a class="btn btn--ghost btn--sm" href="{{ url_for('users.index') }}">View all</a>
+        <a class="btn btn--ghost btn--sm stretched-link" href="{{ url_for('users.index') }}">View all</a>
       </div>
     </div>
 
@@ -87,8 +241,13 @@
   </section>
 
   <div style="display: grid; gap: 18px;">
-    <section class="card">
-      <div class="card__head"><div><h2>Team health</h2><p>Account status at a glance</p></div></div>
+    <section class="card card--linked">
+      <div class="card__head">
+        <div><h2>Team health</h2><p>Account status at a glance</p></div>
+        <div class="card__actions">
+          <a class="btn btn--ghost btn--sm stretched-link" href="{{ url_for('users.index') }}">View all</a>
+        </div>
+      </div>
       <div class="card__body">
         {% set pct = (active_users / total_users * 100) | round(0, 'floor') | int if total_users else 0 %}
         <div style="display: flex; align-items: baseline; gap: 8px;">
@@ -112,8 +271,9 @@
           ('MySQL connection to boss_brand', true),
           ('Users table & authentication', true),
           ('Admin panel shell + theming', true),
-          ('Leads / companies modules', false),
-          ('Website form integration', false),
+          ('Catalog: collections, products, colours, sizes', true),
+          ('Leads & enquiries pipelines', true),
+          ('Companies / orders modules', false),
         ] %}
         {% for label, done in steps %}
         <div style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; {{ 'color: var(--muted);' if not done }}">

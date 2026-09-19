@@ -23,11 +23,37 @@
       </div>
 
       <div class="nav-group">
+        <div class="nav-group__label">Catalog</div>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'collections' }}" href="{{ url_for('collections.index') }}">
+          {{ icon('layers') }} Collections
+        </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'products' }}" href="{{ url_for('products.index') }}">
+          {{ icon('package') }} Products
+        </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'colours' }}" href="{{ url_for('colours.index') }}">
+          {{ icon('droplet') }} Colours
+        </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'sizes' }}" href="{{ url_for('sizes.index') }}">
+          {{ icon('sliders') }} Sizes
+        </a>
+      </div>
+
+      <div class="nav-group">
         <div class="nav-group__label">CRM</div>
-        <span class="nav-link is-soon">{{ icon('target') }} Leads <span class="nav-link__badge">Soon</span></span>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'leads' }}" href="{{ url_for('leads.index') }}">
+          {{ icon('target') }} Leads
+        </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'branding' }}" href="{{ url_for('branding.index') }}">
+          {{ icon('tag') }} Branding methods
+        </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'contacts' }}" href="{{ url_for('contacts.index') }}">
+          {{ icon('inbox') }} Enquiries
+        </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'contact_topics' }}" href="{{ url_for('contact_topics.index') }}">
+          {{ icon('layers') }} Contact topics
+        </a>
         <span class="nav-link is-soon">{{ icon('building') }} Companies <span class="nav-link__badge">Soon</span></span>
         <span class="nav-link is-soon">{{ icon('cart') }} Orders <span class="nav-link__badge">Soon</span></span>
-        <span class="nav-link is-soon">{{ icon('inbox') }} Enquiries <span class="nav-link__badge">Soon</span></span>
       </div>
 
       <div class="nav-group">

@@ -61,4 +61,69 @@
   document.querySelectorAll("[data-autosubmit]").forEach(function (el) {
     el.addEventListener("change", function () { el.form.submit(); });
   });
+
+  // ---- auto-fill a slug field from its named source field -----------------
+  document.querySelectorAll("[data-slug-source]").forEach(function (slugField) {
+    var source = document.getElementById(slugField.getAttribute("data-slug-source"));
+    if (!source) return;
+    var auto = !slugField.value;
+    slugField.addEventListener("input", function () { auto = false; });
+    source.addEventListener("input", function () {
+      if (!auto) return;
+      slugField.value = source.value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    });
+  });
+
+  // ---- motion: staggered entrance, count-up stats, chart draw-in ----------
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    // Stagger the fade-up entrance already applied to every .card/.stat via CSS.
+    document.querySelectorAll(".card, .stat").forEach(function (el, i) {
+      el.style.animationDelay = (Math.min(i, 8) * 45) + "ms";
+    });
+
+    // Count up stat-tile values from 0 instead of showing them instantly.
+    document.querySelectorAll(".stat__value").forEach(function (el) {
+      var raw = el.textContent.trim();
+      if (!/^-?[\d,]+$/.test(raw)) return;
+      var target = parseInt(raw.replace(/,/g, ""), 10);
+      if (isNaN(target)) return;
+      var duration = 700;
+      var start = null;
+      function step(ts) {
+        if (start === null) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target).toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = target.toLocaleString();
+      }
+      requestAnimationFrame(step);
+    });
+
+    // Grow bar-chart fills from 0 to their target width.
+    document.querySelectorAll(".bar-row__fill").forEach(function (el, i) {
+      var target = el.style.width;
+      el.style.width = "0%";
+      el.style.transition = "width 0.6s cubic-bezier(0.16, 0.8, 0.3, 1)";
+      setTimeout(function () { el.style.width = target; }, 120 + Math.min(i, 10) * 45);
+    });
+
+    // Draw donut-chart rings in from empty instead of appearing fully drawn.
+    document.querySelectorAll(".donut-svg circle[stroke-dasharray]").forEach(function (circle) {
+      var dasharray = circle.getAttribute("stroke-dasharray");
+      var r = circle.r && circle.r.baseVal ? circle.r.baseVal.value : 0;
+      var full = 2 * Math.PI * r;
+      circle.setAttribute("stroke-dasharray", "0 " + full);
+      circle.style.transition = "stroke-dasharray 0.8s cubic-bezier(0.16, 0.8, 0.3, 1)";
+      requestAnimationFrame(function () {
+        setTimeout(function () { circle.setAttribute("stroke-dasharray", dasharray); }, 80);
+      });
+    });
+  }
 })();

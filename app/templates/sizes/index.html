@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/pagination.html" import render as render_pagination %}
+
+{% block title %}Sizes{% endblock %}
+{% block page_title %}Sizes{% endblock %}
+{% block page_subtitle %}The size labels products can be offered in{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('sizes.create') }}">{{ icon('plus') }} New size</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search size label…" class="input">
+    </div>
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('sizes.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if sizes %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Sort order</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sizes %}
+        <tr>
+          <td><strong>{{ s.label }}</strong></td>
+          <td class="text-muted text-mono">{{ s.sort_order }}</td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('sizes.edit', size_id=s.id) }}">{{ icon('edit') }} Edit</a>
+            <form method="post" action="{{ url_for('sizes.delete', size_id=s.id) }}"
+                  data-confirm="Delete size “{{ s.label }}”? This cannot be undone.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ render_pagination(pagination, 'sizes.index', noun='size', q=q) }}
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if q else 'sliders') }}</div>
+    <h3>{{ 'No sizes match your search' if q else 'No sizes yet' }}</h3>
+    <p>{{ 'Try a different search term.' if q else 'Add your first size label to get started.' }}</p>
+    {% if q %}
+      <a class="btn btn--ghost" href="{{ url_for('sizes.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('sizes.create') }}">{{ icon('plus') }} Add size</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

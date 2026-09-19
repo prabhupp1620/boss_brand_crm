@@ -1,0 +1,347 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% set editing = product is not none %}
+{% block title %}{{ 'Edit product' if editing else 'New product' }}{% endblock %}
+{% block page_title %}{{ 'Edit product' if editing else 'New product' }}{% endblock %}
+{% block page_subtitle %}{{ product.slug if editing else 'Add a new product SKU family' }}{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('products.index') }}">Products</a>
+  {{ icon('chevron-right') }}
+  <span>{{ 'Edit' if editing else 'New' }}</span>
+</div>
+
+<div style="max-width: 880px;">
+
+  <section class="card">
+    <div class="card__head">
+      {% if product and product.primary_image %}
+        <img src="{{ product.primary_image.url }}" alt="" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);">
+      {% endif %}
+      <div>
+        <h2>{{ product.name if editing else 'Product details' }}</h2>
+        <p>Core information shown on the product page</p>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="card__body">
+        {% if not editing %}
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.primary_image_file.errors }}">
+            {{ form.primary_image_file.label }}
+            {{ form.primary_image_file(class="input") }}
+            <div class="field__hint">PNG, JPG, WEBP or GIF, up to 8&nbsp;MB. More images can be added after saving.</div>
+            {% for e in form.primary_image_file.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field {{ 'field--error' if form.primary_image_alt.errors }}">
+            {{ form.primary_image_alt.label }}
+            {{ form.primary_image_alt(class="input") }}
+            {% for e in form.primary_image_alt.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        {% endif %}
+
+        <div class="form-grid">
+          <div class="field {{ 'field--error' if form.name.errors }}">
+            {{ form.name.label }}
+            {{ form.name(class="input", id="name") }}
+            {% for e in form.name.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.slug.errors }}">
+            {{ form.slug.label }}
+            {{ form.slug(class="input") }}
+            {% for e in form.slug.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.collection_id.errors }}">
+            {{ form.collection_id.label }}
+            {{ form.collection_id(class="select") }}
+            {% for e in form.collection_id.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.garment.errors }}">
+            {{ form.garment.label }}
+            {{ form.garment(class="select") }}
+            {% for e in form.garment.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.fabric.errors }}">
+            {{ form.fabric.label }}
+            {{ form.fabric(class="input") }}
+            {% for e in form.fabric.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.gsm.errors }}">
+            {{ form.gsm.label }}
+            {{ form.gsm(class="input") }}
+            {% for e in form.gsm.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.moq.errors }}">
+            {{ form.moq.label }}
+            {{ form.moq(class="input") }}
+            {% for e in form.moq.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.status.errors }}">
+            {{ form.status.label }}
+            {{ form.status(class="select") }}
+            {% for e in form.status.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.badge.errors }}">
+            {{ form.badge.label }}
+            {{ form.badge(class="select") }}
+            {% for e in form.badge.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field {{ 'field--error' if form.sort_order.errors }}">
+            {{ form.sort_order.label }}
+            {{ form.sort_order(class="input") }}
+            {% for e in form.sort_order.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="field field--full {{ 'field--error' if form.description.errors }}">
+            {{ form.description.label }}
+            {{ form.description(class="input", rows="3") }}
+            {% for e in form.description.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="section-label">Sizes available</div>
+        <div class="field field--full checkbox-grid {{ 'field--error' if form.size_ids.errors }}" style="margin-bottom: 18px;">
+          {{ form.size_ids() }}
+          {% if not form.size_ids.choices %}<p class="text-muted" style="font-size:12.5px;">No sizes yet — <a href="{{ url_for('sizes.create') }}">add one</a>.</p>{% endif %}
+          {% for e in form.size_ids.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="section-label">Colours available</div>
+        <div class="field field--full checkbox-grid {{ 'field--error' if form.colour_ids.errors }}">
+          {{ form.colour_ids() }}
+          {% if not form.colour_ids.choices %}<p class="text-muted" style="font-size:12.5px;">No colours yet — <a href="{{ url_for('colours.create') }}">add one</a>.</p>{% endif %}
+          {% for e in form.colour_ids.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-grid">
+          <div class="field field--full {{ 'field--error' if form.seo_title.errors }}">
+            {{ form.seo_title.label }}
+            {{ form.seo_title(class="input") }}
+            {% for e in form.seo_title.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="field field--full {{ 'field--error' if form.seo_description.errors }}">
+            {{ form.seo_description.label }}
+            {{ form.seo_description(class="input", rows="2") }}
+            {% for e in form.seo_description.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom: 0;">
+          <label class="checkbox">{{ form.is_active() }} Active</label>
+          <div class="field__hint">Inactive products are hidden from the site.</div>
+        </div>
+      </div>
+
+      <div class="card__foot">
+        <a class="btn btn--ghost" href="{{ url_for('products.index') }}">Cancel</a>
+        <div style="margin-left: auto;">
+          {{ form.submit(class="btn btn--primary") }}
+        </div>
+      </div>
+    </form>
+  </section>
+
+  {% if not editing %}
+  <p class="text-muted" style="margin-top: 14px; font-size: 12.5px;">
+    Save the product first — images, price tiers and stock variants can be added once it exists.
+  </p>
+  {% else %}
+
+  <section class="card" style="margin-top: 20px;">
+    <div class="card__head">
+      <div>
+        <h2>{{ icon('image') }} Images</h2>
+        <p>First image is the primary card image; second is the hover cross-fade</p>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if product.images %}
+      <div class="table-wrap" style="margin-bottom: 18px;">
+        <table class="table">
+          <thead><tr><th>#</th><th>Preview</th><th>URL</th><th>Alt text</th><th style="text-align:right;">Actions</th></tr></thead>
+          <tbody>
+            {% for img in product.images %}
+            <tr>
+              <td class="text-muted text-mono">{{ loop.index }}</td>
+              <td><img src="{{ img.url }}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);"></td>
+              <td class="text-muted text-mono" style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ img.url }}</td>
+              <td class="text-muted">{{ img.alt or '—' }}</td>
+              <td class="cell-actions">
+                <form method="post" action="{{ url_for('products.delete_image', product_id=product.id, image_id=img.id) }}" data-confirm="Remove this image?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">No images yet.</p>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('products.add_image', product_id=product.id) }}"
+            enctype="multipart/form-data" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field {{ 'field--error' if image_form.image_file.errors }}">
+          {{ image_form.image_file.label }}
+          {{ image_form.image_file(class="input") }}
+          {% for e in image_form.image_file.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          {{ image_form.url.label }}
+          {{ image_form.url(class="input") }}
+        </div>
+        <div class="field">
+          {{ image_form.alt.label }}
+          {{ image_form.alt(class="input") }}
+        </div>
+        {{ image_form.submit(class="btn btn--ghost") }}
+      </form>
+      <div class="field__hint" style="margin-top: 8px;">Upload a file, or leave it blank and paste a URL/path instead. PNG, JPG, WEBP or GIF, up to 8&nbsp;MB.</div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top: 20px;">
+    <div class="card__head">
+      <div>
+        <h2>{{ icon('tag') }} Price tiers</h2>
+        <p>Volume breaks used for the “from Rs.X” pricing</p>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if product.price_tiers %}
+      <div class="table-wrap" style="margin-bottom: 18px;">
+        <table class="table">
+          <thead><tr><th>Min quantity</th><th>Unit price</th><th style="text-align:right;">Actions</th></tr></thead>
+          <tbody>
+            {% for tier in product.price_tiers %}
+            <tr>
+              <td class="text-mono">{{ tier.min_qty }}+</td>
+              <td class="text-mono">Rs. {{ '%.2f' % tier.unit_price }}</td>
+              <td class="cell-actions">
+                <form method="post" action="{{ url_for('products.delete_price_tier', product_id=product.id, tier_id=tier.id) }}" data-confirm="Remove this price tier?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">No price tiers yet — the product won't show a starting price on the site.</p>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('products.add_price_tier', product_id=product.id) }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field field--sm">
+          {{ tier_form.min_qty.label }}
+          {{ tier_form.min_qty(class="input") }}
+        </div>
+        <div class="field field--sm">
+          {{ tier_form.unit_price.label }}
+          {{ tier_form.unit_price(class="input") }}
+        </div>
+        {{ tier_form.submit(class="btn btn--ghost") }}
+      </form>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top: 20px;">
+    <div class="card__head">
+      <div>
+        <h2>{{ icon('package') }} Stock variants</h2>
+        <p>Per size/colour SKUs and stock on hand</p>
+      </div>
+    </div>
+    <div class="card__body">
+      {% if product.variants %}
+      <div class="table-wrap" style="margin-bottom: 18px;">
+        <table class="table">
+          <thead><tr><th><abbr title="Stock Keeping Unit" style="text-decoration-style: dotted;">SKU</abbr></th><th>Size</th><th>Colour</th><th>Stock</th><th>Hub</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+          <tbody>
+            {% for v in product.variants %}
+            <tr>
+              <td class="text-mono">{{ v.sku }}</td>
+              <td class="text-muted">{{ v.size.label if v.size else '—' }}</td>
+              <td class="text-muted">
+                {% if v.colour %}<span class="swatch-dot" style="background: {{ v.colour.hex }};"></span>{{ v.colour.name }}{% else %}—{% endif %}
+              </td>
+              <td class="text-mono">{{ v.stock_units }}</td>
+              <td class="text-muted">{{ v.hub or '—' }}</td>
+              <td>
+                <span class="badge {{ 'badge--success' if v.status == 'in-stock' else ('badge--warning' if v.status == 'low' else 'badge--neutral') }}">
+                  {{ v.status.replace('-', ' ').title() }}
+                </span>
+              </td>
+              <td class="cell-actions">
+                <form method="post" action="{{ url_for('products.delete_variant', product_id=product.id, variant_id=v.id) }}" data-confirm="Remove variant “{{ v.sku }}”?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">No stock variants yet.</p>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('products.add_variant', product_id=product.id) }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field field--sm">
+          {{ variant_form.size_id.label }}
+          {{ variant_form.size_id(class="select") }}
+        </div>
+        <div class="field field--sm">
+          {{ variant_form.colour_id.label }}
+          {{ variant_form.colour_id(class="select") }}
+        </div>
+        <div class="field">
+          {{ variant_form.sku.label }}
+          {{ variant_form.sku(class="input") }}
+        </div>
+        <div class="field field--sm">
+          {{ variant_form.stock_units.label }}
+          {{ variant_form.stock_units(class="input") }}
+        </div>
+        <div class="field">
+          {{ variant_form.hub.label }}
+          {{ variant_form.hub(class="input") }}
+        </div>
+        <div class="field field--sm">
+          {{ variant_form.status.label }}
+          {{ variant_form.status(class="select") }}
+        </div>
+        {{ variant_form.submit(class="btn btn--ghost") }}
+      </form>
+    </div>
+  </section>
+
+  {% endif %}
+</div>
+{% endblock %}

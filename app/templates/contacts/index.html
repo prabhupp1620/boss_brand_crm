@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% from "partials/pagination.html" import render as render_pagination %}
+
+{% block title %}Enquiries{% endblock %}
+{% block page_title %}Enquiries{% endblock %}
+{% block page_subtitle %}General contact-us submissions from the site{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('contacts.create') }}">{{ icon('plus') }} New enquiry</a>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name, company, email or reference…" class="input">
+    </div>
+
+    <select name="status" class="select" data-autosubmit style="width: auto; min-width: 150px;">
+      <option value="">All statuses</option>
+      <option value="new"       {{ 'selected' if status == 'new' }}>New</option>
+      <option value="in-review" {{ 'selected' if status == 'in-review' }}>In review</option>
+      <option value="replied"   {{ 'selected' if status == 'replied' }}>Replied</option>
+      <option value="closed"    {{ 'selected' if status == 'closed' }}>Closed</option>
+      <option value="spam"      {{ 'selected' if status == 'spam' }}>Spam</option>
+    </select>
+
+    <button class="btn btn--ghost" type="submit">{{ icon('search') }} Search</button>
+    {% if q or status %}
+      <a class="btn btn--ghost" href="{{ url_for('contacts.index') }}">{{ icon('x') }} Clear</a>
+    {% endif %}
+  </form>
+
+  {% if contacts %}
+  <div class="card__body card__body--flush table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Contact</th>
+          <th>Topic</th>
+          <th>Status</th>
+          <th>Received</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contacts %}
+        <tr>
+          <td class="text-mono">{{ c.reference }}</td>
+          <td>
+            <strong>{{ c.name }}</strong><br>
+            <span class="text-muted">{{ c.company }}</span>
+          </td>
+          <td class="text-muted">{{ c.topic_display }}</td>
+          <td>
+            <span class="badge {{ 'badge--success' if c.status == 'replied' else ('badge--danger' if c.status in ('closed','spam') else ('badge--warning' if c.status == 'in-review' else 'badge--info')) }}">
+              {{ c.status_label }}
+            </span>
+          </td>
+          <td class="text-muted text-mono">{{ c.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+          <td class="cell-actions">
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('contacts.edit', contact_id=c.id) }}">{{ icon('edit') }} Open</a>
+            <form method="post" action="{{ url_for('contacts.delete', contact_id=c.id) }}"
+                  data-confirm="Delete enquiry “{{ c.reference }}”?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ render_pagination(pagination, 'contacts.index', noun='enquiry', q=q, status=status) }}
+
+  {% else %}
+  <div class="empty">
+    <div class="empty__icon">{{ icon('search' if (q or status) else 'inbox') }}</div>
+    <h3>{{ 'No enquiries match your filters' if (q or status) else 'No enquiries yet' }}</h3>
+    <p>{{ 'Try a different search term or clear the filters.' if (q or status) else 'Contact form submissions from the site will show up here.' }}</p>
+    {% if q or status %}
+      <a class="btn btn--ghost" href="{{ url_for('contacts.index') }}">{{ icon('x') }} Clear filters</a>
+    {% else %}
+      <a class="btn btn--primary" href="{{ url_for('contacts.create') }}">{{ icon('plus') }} Add enquiry</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
