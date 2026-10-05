@@ -148,6 +148,14 @@ class CollectionForm(FlaskForm):
         render_kw={"placeholder": "https://… or /products/…"},
     )
     remove_image = BooleanField("Remove current image")
+    cutout_file = FileField(
+        "Upload cut-out", validators=[Optional(), FileAllowed(ALLOWED_IMAGE_EXTENSIONS, "Images only.")]
+    )
+    cutout_url = StringField(
+        "Or cut-out URL / path", validators=[Optional(), Length(max=512)],
+        render_kw={"placeholder": "https://… or /categories/…"},
+    )
+    remove_cutout = BooleanField("Remove current cut-out")
     garment = SelectField("Garment", choices=GARMENT_SELECT_CHOICES, validators=[DataRequired()])
     moq = IntegerField(
         "MOQ (Minimum Order Quantity)", validators=[DataRequired(), NumberRange(min=1)], default=50
@@ -385,3 +393,37 @@ class ContactRequestForm(FlaskForm):
     replied_at = DateTimeField("Replied at", validators=[Optional()], format="%Y-%m-%dT%H:%M")
 
     submit = SubmitField("Save enquiry")
+
+
+class ClientForm(FlaskForm):
+    name = StringField(
+        "Client name", validators=[DataRequired(), Length(max=160)],
+        render_kw={"placeholder": "Acme Industries"},
+    )
+    slug = StringField(
+        "Slug", validators=[DataRequired(), Length(max=80), SLUG_VALIDATOR],
+        render_kw={"placeholder": "acme-industries", "data-slug-source": "name"},
+    )
+    sector = StringField(
+        "Sector", validators=[Optional(), Length(max=80)],
+        render_kw={"placeholder": "Manufacturing, IT services, Hospitality…"},
+    )
+    logo_file = FileField(
+        "Upload logo", validators=[Optional(), FileAllowed(ALLOWED_IMAGE_EXTENSIONS, "Images only.")]
+    )
+    logo_path = StringField(
+        "Or logo URL / path", validators=[Optional(), Length(max=512)],
+        render_kw={"placeholder": "https://… or /clients/…"},
+    )
+    remove_logo = BooleanField("Remove current logo")
+
+    permission_granted = BooleanField("Permission granted to show this logo publicly")
+    permission_date = DateField("Permission date", validators=[Optional()])
+    permission_note = StringField(
+        "Permission note", validators=[Optional(), Length(max=255)],
+        render_kw={"placeholder": "Email approval from Priya, 12 Aug 2026"},
+    )
+
+    sort_order = IntegerField("Sort order", validators=[Optional(), NumberRange(min=0, max=65535)], default=0)
+    is_active = BooleanField("Active", default=True)
+    submit = SubmitField("Save client")

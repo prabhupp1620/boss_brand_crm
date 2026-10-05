@@ -1,3 +1,8 @@
+# Service-account keys — never commit these
+*-service-account.json
+bossbrand-*.json
+gcs-*.json
+
 # Environment / secrets
 .env
 .env.*

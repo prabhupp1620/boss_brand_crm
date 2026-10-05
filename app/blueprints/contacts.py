@@ -87,6 +87,19 @@ def index():
     )
 
 
+@contacts_bp.route("/<int:contact_id>")
+@login_required
+def view(contact_id):
+    """Read-only summary of everything captured for one enquiry.
+
+    Mirrors leads.view. The edit screen only exposes the fields staff may
+    change; everything the visitor actually sent — message, intent, referrer,
+    UTM tags, IP, user agent — was previously not visible anywhere in the CRM.
+    """
+    contact = _get_contact(contact_id)
+    return render_template("contacts/view.html", contact=contact)
+
+
 @contacts_bp.route("/new", methods=["GET", "POST"])
 @login_required
 def create():

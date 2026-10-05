@@ -1,5 +1,5 @@
-"""Pluggable file storage — local disk in development, an S3-compatible
-bucket in production. Selected by the STORAGE_BACKEND config value; both
+"""Pluggable file storage — local disk in development, a Google Cloud
+Storage bucket in production (an S3-compatible backend is also available). Selected by the STORAGE_BACKEND config value; both
 backends expose the same save()/delete()/owns() so app/uploads.py (and
 everything above it) never needs to know which one is active.
 """
@@ -88,6 +88,91 @@ class S3Storage:
             pass
 
 
+
+
+class GCSStorage:
+    """Writes to a Google Cloud Storage bucket, alongside the API.
+
+    Deliberately mirrors boss_brand_api/app/core/storage.py: objects use the
+    key `uploads/<subdir>/<filename>` and the value stored in the database is
+    the *relative* path `/uploads/<subdir>/<filename>`. Both services share
+    one bucket and one database, so the layout has to match — and because the
+    stored value is relative, switching between local disk and the bucket
+    needs no data migration.
+
+    Configure GCS_BUCKET, optionally GCS_PUBLIC_BASE_URL (a CDN or custom
+    domain in front of it) and GCS_CREDENTIALS_FILE (blank falls back to
+    GOOGLE_APPLICATION_CREDENTIALS or workload identity).
+    """
+
+    def _bucket(self):
+        from google.cloud import storage  # lazy: local dev needs no SDK
+
+        credentials_file = current_app.config.get("GCS_CREDENTIALS_FILE")
+        if credentials_file:
+            client = storage.Client.from_service_account_json(credentials_file)
+        else:
+            client = storage.Client()
+        return client.bucket(current_app.config["GCS_BUCKET"])
+
+    def save(self, file_storage, subdir: str, filename: str) -> str:
+        key = f"uploads/{subdir}/{filename}"
+        blob = self._bucket().blob(key)
+        # Set the type explicitly: without it the browser gets a download
+        # rather than an inline image. No predefined ACL — new buckets use
+        # uniform bucket-level access, where public reads are granted once on
+        # the bucket instead of per object.
+        blob.upload_from_file(
+            file_storage.stream,
+            content_type=file_storage.mimetype or "application/octet-stream",
+        )
+        return f"/{key}"
+
+    def owns(self, url: str) -> bool:
+        return bool(url) and url.startswith("/uploads/")
+
+    def delete(self, url: str) -> None:
+        if not self.owns(url):
+            return
+        try:
+            self._bucket().blob(url.lstrip("/")).delete()
+        except Exception:  # noqa: BLE001 — a missing object is not an error
+            pass
+
+
+def media_url(path: str | None) -> str | None:
+    """Resolve a stored image path to something a browser can load.
+
+    Stored values are relative (`/uploads/collections/x.png`). On local disk
+    this app's own /uploads route serves them, so the path is already right.
+    With the bucket active they have to be prefixed with the bucket or CDN
+    origin — the same job `absolute()` does on the API side.
+
+    Anything already absolute is returned untouched. Every relative path is
+    resolved against the bucket — it mirrors all three prefixes the database
+    uses (/uploads/ for CRM uploads, /products/ and /categories/ for the
+    artwork that ships with the website), which is the same rule the API's
+    images.absolute() applies.
+    """
+    if not path:
+        return path
+    if path.startswith(("http://", "https://", "//")):
+        return path
+    if current_app.config.get("STORAGE_BACKEND") != "gcs":
+        return path
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    base = current_app.config.get("GCS_PUBLIC_BASE_URL")
+    if not base:
+        base = f"https://storage.googleapis.com/{current_app.config.get('GCS_BUCKET')}"
+    return f"{base.rstrip('/')}{path}"
+
+
 def get_storage():
     backend = current_app.config.get("STORAGE_BACKEND", "local")
-    return S3Storage() if backend == "s3" else LocalStorage()
+    if backend == "gcs":
+        return GCSStorage()
+    if backend == "s3":
+        return S3Storage()
+    return LocalStorage()

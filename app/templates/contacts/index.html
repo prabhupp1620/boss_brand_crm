@@ -49,7 +49,7 @@
       <tbody>
         {% for c in contacts %}
         <tr>
-          <td class="text-mono">{{ c.reference }}</td>
+          <td class="text-mono"><a href="{{ url_for('contacts.view', contact_id=c.id) }}">{{ c.reference }}</a></td>
           <td>
             <strong>{{ c.name }}</strong><br>
             <span class="text-muted">{{ c.company }}</span>
@@ -62,7 +62,8 @@
           </td>
           <td class="text-muted text-mono">{{ c.created_at.strftime('%d %b %Y, %H:%M') }}</td>
           <td class="cell-actions">
-            <a class="btn btn--ghost btn--sm" href="{{ url_for('contacts.edit', contact_id=c.id) }}">{{ icon('edit') }} Open</a>
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('contacts.view', contact_id=c.id) }}">{{ icon('search') }} View</a>
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('contacts.edit', contact_id=c.id) }}">{{ icon('edit') }} Edit</a>
             <form method="post" action="{{ url_for('contacts.delete', contact_id=c.id) }}"
                   data-confirm="Delete enquiry “{{ c.reference }}”?">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

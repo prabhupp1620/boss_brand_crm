@@ -36,6 +36,9 @@
         <a class="nav-link {{ 'is-active' if request.blueprint == 'sizes' }}" href="{{ url_for('sizes.index') }}">
           {{ icon('sliders') }} Sizes
         </a>
+        <a class="nav-link {{ 'is-active' if request.blueprint == 'clients' }}" href="{{ url_for('clients.index') }}">
+          {{ icon('building') }} Clients
+        </a>
       </div>
 
       <div class="nav-group">

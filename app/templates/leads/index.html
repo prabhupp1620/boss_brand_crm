@@ -51,7 +51,7 @@
       <tbody>
         {% for lead in leads %}
         <tr>
-          <td class="text-mono">{{ lead.reference }}</td>
+          <td class="text-mono"><a href="{{ url_for('leads.view', lead_id=lead.id) }}">{{ lead.reference }}</a></td>
           <td>
             <strong>{{ lead.name }}</strong><br>
             <span class="text-muted">{{ lead.company }}</span>
@@ -65,7 +65,8 @@
           </td>
           <td class="text-muted text-mono">{{ lead.created_at.strftime('%d %b %Y, %H:%M') }}</td>
           <td class="cell-actions">
-            <a class="btn btn--ghost btn--sm" href="{{ url_for('leads.edit', lead_id=lead.id) }}">{{ icon('edit') }} Open</a>
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('leads.view', lead_id=lead.id) }}">{{ icon('search') }} View</a>
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('leads.edit', lead_id=lead.id) }}">{{ icon('edit') }} Edit</a>
             <form method="post" action="{{ url_for('leads.delete', lead_id=lead.id) }}"
                   data-confirm="Delete lead “{{ lead.reference }}”? This removes its basket lines and branding selections too.">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

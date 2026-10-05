@@ -10,7 +10,13 @@
 <div class="crumbs">
   <a href="{{ url_for('leads.index') }}">Leads</a>
   {{ icon('chevron-right') }}
-  <span>{{ lead.reference if editing else 'New' }}</span>
+  {% if editing %}
+    <a href="{{ url_for('leads.view', lead_id=lead.id) }}">{{ lead.reference }}</a>
+    {{ icon('chevron-right') }}
+    <span>Edit</span>
+  {% else %}
+    <span>New</span>
+  {% endif %}
 </div>
 
 <div style="max-width: 880px;">

@@ -18,7 +18,7 @@
   <section class="card">
     <div class="card__head">
       {% if product and product.primary_image %}
-        <img src="{{ product.primary_image.url }}" alt="" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);">
+        <img src="{{ media_url(product.primary_image.url) }}" alt="" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);">
       {% endif %}
       <div>
         <h2>{{ product.name if editing else 'Product details' }}</h2>
@@ -182,7 +182,7 @@
             {% for img in product.images %}
             <tr>
               <td class="text-muted text-mono">{{ loop.index }}</td>
-              <td><img src="{{ img.url }}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);"></td>
+              <td><img src="{{ media_url(img.url) }}" alt="" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);"></td>
               <td class="text-muted text-mono" style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ img.url }}</td>
               <td class="text-muted">{{ img.alt or '—' }}</td>
               <td class="cell-actions">

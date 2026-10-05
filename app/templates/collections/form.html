@@ -49,7 +49,7 @@
             <div style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;">
               {% if editing and collection.image_url %}
               <div style="flex: 0 0 auto;">
-                <img src="{{ collection.image_url }}" alt=""
+                <img src="{{ media_url(collection.image_url) }}" alt=""
                      style="width: 120px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);">
                 <label class="checkbox" style="margin-top: 6px; font-size: 12px;">
                   {{ form.remove_image() }} Remove current image
@@ -67,6 +67,40 @@
                   {{ form.image_url(class="input") }}
                   <div class="field__hint">Used only if no file is uploaded above — e.g. a path already hosted on the live site.</div>
                   {% for e in form.image_url.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field field--full">
+            <label class="label">Hero cut-out</label>
+            <div class="field__hint" style="margin-bottom: 8px;">
+              Transparent PNG of the product on its own — no background, and no
+              collection name baked in. Used on the website's homepage banner,
+              where the name is set as live text beside it. A collection with no
+              cut-out simply doesn't appear in that banner.
+            </div>
+            <div style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;">
+              {% if editing and collection.cutout_url %}
+              <div style="flex: 0 0 auto;">
+                <img src="{{ media_url(collection.cutout_url) }}" alt=""
+                     style="width: 120px; height: 80px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border);">
+                <label class="checkbox" style="margin-top: 6px; font-size: 12px;">
+                  {{ form.remove_cutout() }} Remove current cut-out
+                </label>
+              </div>
+              {% endif %}
+              <div style="flex: 1 1 260px; min-width: 240px;">
+                <div class="field {{ 'field--error' if form.cutout_file.errors }}" style="margin-bottom: 10px;">
+                  {{ form.cutout_file(class="input") }}
+                  <div class="field__hint">PNG with transparency, up to 8&nbsp;MB.</div>
+                  {% for e in form.cutout_file.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="field {{ 'field--error' if form.cutout_url.errors }}" style="margin-bottom: 0;">
+                  {{ form.cutout_url.label }}
+                  {{ form.cutout_url(class="input") }}
+                  <div class="field__hint">Used only if no file is uploaded above.</div>
+                  {% for e in form.cutout_url.errors %}<div class="field__error">{{ e }}</div>{% endfor %}
                 </div>
               </div>
             </div>

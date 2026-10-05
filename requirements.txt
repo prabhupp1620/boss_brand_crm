@@ -10,3 +10,4 @@ cryptography==46.0.5
 python-dotenv==1.2.1
 email-validator==2.3.0
 boto3==1.40.35
+google-cloud-storage==3.4.1

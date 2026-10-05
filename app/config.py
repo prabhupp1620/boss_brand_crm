@@ -36,11 +36,17 @@ class Config:
     ADMIN_NAME = os.getenv("ADMIN_NAME", "Boss Brand Admin")
 
     # File storage for uploaded collection/product images — local disk here in
-    # development; set STORAGE_BACKEND=s3 (+ the S3_* values) in production to
-    # write to a bucket instead. See app/storage.py.
+    # development; set STORAGE_BACKEND=gcs (+ the GCS_* values) in production to
+    # write to the shared bucket instead. See app/storage.py.
     STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local")
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(BASE_DIR, "uploads"))
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024  # 8 MB request body cap
+
+    # Google Cloud Storage (production). Same variable names as the API's
+    # .env so one bucket and one set of credentials serves both services.
+    GCS_BUCKET = os.getenv("GCS_BUCKET", "")
+    GCS_PUBLIC_BASE_URL = os.getenv("GCS_PUBLIC_BASE_URL", "")  # CDN/custom domain; blank = bucket URL
+    GCS_CREDENTIALS_FILE = os.getenv("GCS_CREDENTIALS_FILE", "")  # blank = GOOGLE_APPLICATION_CREDENTIALS
 
     S3_BUCKET = os.getenv("S3_BUCKET", "")
     S3_REGION = os.getenv("S3_REGION", "us-east-1")

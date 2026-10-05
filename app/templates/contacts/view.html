@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block title %}{{ contact.reference }}{% endblock %}
+{% block page_title %}{{ contact.reference }}{% endblock %}
+{% block page_subtitle %}{{ contact.company }} — {{ contact.name }}{% endblock %}
+
+{% block topbar_actions %}
+  <a class="btn btn--primary btn--sm" href="{{ url_for('contacts.edit', contact_id=contact.id) }}">{{ icon('edit') }} Edit</a>
+{% endblock %}
+
+{# One label/value row. Renders an em dash when the value is empty. #}
+{% macro row(label, value, mono=false) %}
+  <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--border);">
+    <div class="text-muted" style="font-size: 13px;">{{ label }}</div>
+    <div {% if mono %}class="text-mono"{% endif %} style="min-width: 0; overflow-wrap: anywhere;">
+      {%- if value %}{{ value }}{% else %}<span class="text-muted">—</span>{% endif -%}
+    </div>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('contacts.index') }}">Enquiries</a>
+  {{ icon('chevron-right') }}
+  <span>{{ contact.reference }}</span>
+</div>
+
+<div style="max-width: 980px;">
+
+  <!-- Summary -->
+  <section class="card">
+    <div class="card__head">
+      <div>
+        <h2>{{ contact.reference }}</h2>
+        <p>Received {{ contact.created_at.strftime('%d %b %Y at %H:%M') }}</p>
+      </div>
+      <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+        {% set tone = {'new':'info','in-review':'warning','replied':'success','closed':'danger','spam':'neutral'} %}
+        <span class="badge badge--{{ tone.get(contact.status, 'neutral') }}">{{ contact.status_label }}</span>
+      </div>
+    </div>
+    <div class="card__body">
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat__top"><span class="stat__label">Topic</span></div>
+          <div class="stat__value" style="font-size: 18px;">{{ contact.topic_display }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat__top"><span class="stat__label">Assigned to</span></div>
+          <div class="stat__value" style="font-size: 18px;">{{ contact.assigned_to or '—' }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat__top"><span class="stat__label">Replied</span></div>
+          <div class="stat__value" style="font-size: 18px;">
+            {% if contact.replied_at %}{{ contact.replied_at.strftime('%d %b, %H:%M') }}{% else %}Not yet{% endif %}
+          </div>
+        </div>
+        <div class="stat">
+          {# The page promises a reply within one business day, so the age of
+             an unanswered enquiry is the number worth showing first. #}
+          <div class="stat__top"><span class="stat__label">{{ 'Answered in' if contact.replied_at else 'Waiting' }}</span></div>
+          <div class="stat__value" style="font-size: 18px;">
+            {% set until = contact.replied_at or now %}
+            {% set hours = ((until - contact.created_at).total_seconds() / 3600) | round(0, 'floor') | int %}
+            {% if hours < 1 %}Under 1h{% elif hours < 48 %}{{ hours }}h{% else %}{{ (hours // 24) }}d{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="card" style="margin-top: 18px;">
+    <div class="card__head">
+      <div><h2>Contact</h2><p>Who submitted the enquiry</p></div>
+    </div>
+    <div class="card__body">
+      {{ row('Name', contact.name) }}
+      {{ row('Company', contact.company) }}
+      <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--border);">
+        <div class="text-muted" style="font-size: 13px;">Email</div>
+        <div style="min-width: 0; overflow-wrap: anywhere;"><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></div>
+      </div>
+      <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--border);">
+        <div class="text-muted" style="font-size: 13px;">Phone</div>
+        <div>
+          {%- if contact.phone %}<a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>{% else %}<span class="text-muted">—</span>{% endif -%}
+        </div>
+      </div>
+      {{ row('Topic', contact.topic_display) }}
+      {# `intent` distinguishes "Book a factory call" from a general enquiry.
+         It is null on every row until the website starts sending it. #}
+      {{ row('Intent', contact.intent, mono=true) }}
+    </div>
+  </section>
+
+  <!-- Message -->
+  <section class="card" style="margin-top: 18px;">
+    <div class="card__head">
+      <div><h2>Message</h2><p>Exactly as it was submitted</p></div>
+    </div>
+    <div class="card__body">
+      <div style="white-space: pre-wrap; overflow-wrap: anywhere;">
+        {%- if contact.message %}{{ contact.message }}{% else %}<span class="text-muted">—</span>{% endif -%}
+      </div>
+    </div>
+  </section>
+
+  <!-- Pipeline -->
+  <section class="card" style="margin-top: 18px;">
+    <div class="card__head">
+      <div><h2>Pipeline</h2><p>Internal status — not visible to the customer</p></div>
+    </div>
+    <div class="card__body">
+      {{ row('Status', contact.status_label) }}
+      {{ row('Status note', contact.status_note) }}
+      {{ row('Assigned to', contact.assigned_to) }}
+      {{ row('Replied at', contact.replied_at.strftime('%d %b %Y at %H:%M') if contact.replied_at else '') }}
+      {{ row('Last updated', contact.updated_at.strftime('%d %b %Y at %H:%M') if contact.updated_at else '') }}
+    </div>
+  </section>
+
+  <!-- Source -->
+  {% set has_source = contact.source_page or contact.referrer or contact.utm_source or contact.utm_medium
+                      or contact.utm_campaign or contact.ip_address or contact.user_agent or contact.crm_id %}
+  {% if has_source %}
+  <section class="card" style="margin-top: 18px;">
+    <div class="card__head">
+      <div><h2>Source &amp; tracking</h2><p>Where this submission came from</p></div>
+    </div>
+    <div class="card__body">
+      {{ row('Source page', contact.source_page, mono=true) }}
+      {{ row('Referrer', contact.referrer, mono=true) }}
+      {{ row('UTM source', contact.utm_source, mono=true) }}
+      {{ row('UTM medium', contact.utm_medium, mono=true) }}
+      {{ row('UTM campaign', contact.utm_campaign, mono=true) }}
+      {{ row('IP address', contact.ip_address, mono=true) }}
+      {{ row('User agent', contact.user_agent, mono=true) }}
+      {{ row('CRM ID', contact.crm_id, mono=true) }}
+    </div>
+  </section>
+  {% endif %}
+
+  <div style="display: flex; gap: 8px; margin-top: 18px;">
+    <a class="btn btn--ghost" href="{{ url_for('contacts.index') }}">{{ icon('chevron-right') }} Back to enquiries</a>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <a class="btn btn--primary" href="{{ url_for('contacts.edit', contact_id=contact.id) }}">{{ icon('edit') }} Edit enquiry</a>
+      <form method="post" action="{{ url_for('contacts.delete', contact_id=contact.id) }}"
+            data-confirm="Delete enquiry “{{ contact.reference }}”?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn--danger" type="submit">{{ icon('trash') }} Delete</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

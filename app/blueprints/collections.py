@@ -18,26 +18,36 @@ def _slug_taken(slug: str, exclude_id: int | None = None) -> bool:
     return db.session.scalar(stmt) is not None
 
 
-def _apply_image(collection: Collection, form: CollectionForm) -> None:
-    old_url = collection.image_url
-    if form.image_file.data:
-        new_url = save_image(form.image_file.data, "collections")
-        collection.image_url = new_url
+def _apply_upload(collection: Collection, form: CollectionForm, field: str) -> None:
+    """Apply one image field: uploaded file wins, then remove, then pasted path.
+
+    `field` is the column name ("image_url" / "cutout_url"); the form fields
+    are named to match, so the banner and the cut-out cannot drift apart.
+    """
+    prefix = field.removesuffix("_url")
+    old_url = getattr(collection, field)
+    upload = getattr(form, f"{prefix}_file").data
+    remove = getattr(form, f"remove_{prefix}").data
+
+    if upload:
+        new_url = save_image(upload, "collections")
+        setattr(collection, field, new_url)
         if old_url and old_url != new_url:
             delete_upload(old_url)
-    elif form.remove_image.data:
-        collection.image_url = None
+    elif remove:
+        setattr(collection, field, None)
         if old_url:
             delete_upload(old_url)
     else:
-        collection.image_url = (form.image_url.data or "").strip() or None
+        setattr(collection, field, (getattr(form, field).data or "").strip() or None)
 
 
 def _apply_form(collection: Collection, form: CollectionForm) -> None:
     collection.name = form.name.data.strip()
     collection.slug = form.slug.data.strip().lower()
     collection.tagline = form.tagline.data.strip()
-    _apply_image(collection, form)
+    _apply_upload(collection, form, "image_url")
+    _apply_upload(collection, form, "cutout_url")
     collection.garment = form.garment.data
     collection.moq = form.moq.data
     collection.starting_price_override = form.starting_price_override.data
@@ -147,6 +157,7 @@ def delete(collection_id):
 
     name = collection.name
     delete_upload(collection.image_url)
+    delete_upload(collection.cutout_url)
     db.session.delete(collection)
     db.session.commit()
     flash(f"Collection “{name}” deleted.", "success")

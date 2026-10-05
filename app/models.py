@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask_login import UserMixin
+from sqlalchemy.dialects import mysql
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .extensions import db, login_manager
@@ -77,6 +78,10 @@ class Collection(db.Model):
     name = db.Column(db.String(160), nullable=False)
     tagline = db.Column(db.String(255), nullable=False)
     image_url = db.Column(db.String(512))
+    # Transparent PNG of the product, used by the site's homepage hero. The
+    # banner above has the collection name typeset into it, so the hero needs
+    # a separate cut-out with no background and no baked-in text.
+    cutout_url = db.Column(db.String(512))
     garment = db.Column(db.String(20), nullable=False)
     moq = db.Column(db.Integer, nullable=False, default=50)
     starting_price_override = db.Column(db.Numeric(10, 2))
@@ -537,3 +542,58 @@ class ContactRequest(db.Model):
 
     def __repr__(self) -> str:
         return f"<ContactRequest {self.reference}>"
+
+
+# =============================================================================
+# Clients
+# =============================================================================
+
+
+class Client(db.Model):
+    """A client logo shown in the website's client strip.
+
+    The strip only shows a client when BOTH `permission_granted` and
+    `is_active` are true — the composite index mirrors that read path.
+    Column types match the hand-written DDL (unsigned ints, DB-side
+    timestamps) so `create_all()` stays a no-op against the live table.
+    """
+
+    __tablename__ = "clients"
+
+    id = db.Column(mysql.INTEGER(unsigned=True), primary_key=True)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(160), nullable=False)
+    logo_path = db.Column(db.String(512))
+    sector = db.Column(db.String(80))
+
+    permission_granted = db.Column(mysql.TINYINT(1), nullable=False, default=0)
+    permission_note = db.Column(db.String(255))
+    permission_date = db.Column(db.Date)
+
+    is_active = db.Column(mysql.TINYINT(1), nullable=False, default=1)
+    sort_order = db.Column(mysql.SMALLINT(unsigned=True), nullable=False, default=0)
+
+    created_at = db.Column(
+        db.TIMESTAMP, nullable=False, server_default=db.func.current_timestamp()
+    )
+    updated_at = db.Column(
+        db.TIMESTAMP,
+        nullable=False,
+        server_default=db.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"),
+    )
+
+    __table_args__ = (
+        db.Index("idx_clients_public", "permission_granted", "is_active", "sort_order"),
+    )
+
+    @property
+    def is_public(self) -> bool:
+        """True when this client actually appears in the website strip."""
+        return bool(self.permission_granted) and bool(self.is_active)
+
+    @property
+    def sector_display(self) -> str:
+        return self.sector or "—"
+
+    def __repr__(self) -> str:
+        return f"<Client {self.slug}>"

@@ -104,6 +104,14 @@ def index():
     )
 
 
+@leads_bp.route("/<int:lead_id>")
+@login_required
+def view(lead_id):
+    """Read-only summary of everything captured for one lead."""
+    lead = _get_lead(lead_id)
+    return render_template("leads/view.html", lead=lead)
+
+
 @leads_bp.route("/new", methods=["GET", "POST"])
 @login_required
 def create():

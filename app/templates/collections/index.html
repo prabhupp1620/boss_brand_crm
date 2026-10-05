@@ -49,7 +49,7 @@
           <td>
             <div class="cell-user">
               {% if c.image_url %}
-                <img src="{{ c.image_url }}" alt="" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex: 0 0 38px; border: 1px solid var(--border);">
+                <img src="{{ media_url(c.image_url) }}" alt="" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex: 0 0 38px; border: 1px solid var(--border);">
               {% else %}
                 <div class="avatar avatar--sm">{{ icon('image') }}</div>
               {% endif %}
