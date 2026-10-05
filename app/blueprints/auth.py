@@ -8,7 +8,7 @@ from ..extensions import db
 from ..forms import LoginForm
 from ..models import User
 
-auth_bp = Blueprint("auth", __name__)
+auth_bp = Blueprint("auth", __name__) 
 
 
 def _safe_next(target: str | None) -> str:
